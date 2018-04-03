@@ -490,6 +490,15 @@ func newPaginatorFromPages(pages Pages, size int, urlFactory paginationURLFactor
 		return nil, errors.New("Paginator size must be positive")
 	}
 
+	for i, pg := range pages {
+		if i > 0 {
+			pg.NextInSection = pages[i-1]
+		}
+		if i < len(pages)-1 {
+			pg.PrevInSection = pages[i+1]
+		}
+	}
+
 	split := splitPages(pages, size)
 
 	return newPaginator(split, len(pages), size, urlFactory)
@@ -499,6 +508,21 @@ func newPaginatorFromPageGroups(pageGroups PagesGroup, size int, urlFactory pagi
 
 	if size <= 0 {
 		return nil, errors.New("Paginator size must be positive")
+	}
+
+	for i, grp := range pageGroups {
+		for j, pg := range grp.Pages {
+			if j > 0 {
+				pg.NextInSection = grp.Pages[j-1]
+			} else if i > 0 {
+				pg.NextInSection = pageGroups[i-1].Pages[len(pageGroups[i-1].Pages)-1]
+			}
+			if j < len(grp.Pages)-1 {
+				pg.PrevInSection = grp.Pages[j+1]
+			} else if i < (len(pageGroups) - 1) {
+				pg.PrevInSection = pageGroups[i+1].Pages[0]
+			}
+		}
 	}
 
 	split := splitPageGroups(pageGroups, size)
